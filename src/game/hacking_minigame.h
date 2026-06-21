@@ -3,7 +3,7 @@
 
 #include "gba_types.h"
 
-/* Hacking grid size */
+/* Neural Sync grid size */
 #define HACK_GRID_SIZE 5
 #define HACK_MAX_NODES (HACK_GRID_SIZE * HACK_GRID_SIZE)
 
@@ -19,7 +19,7 @@ typedef enum {
     NODE_WRONG
 } NodeType;
 
-/* Hacking state */
+/* Neural Sync state */
 typedef struct {
     NodeType grid[HACK_GRID_SIZE][HACK_GRID_SIZE];
     int cursor_x;
@@ -27,7 +27,7 @@ typedef struct {
     int start_x, start_y;
     int end_x, end_y;
     int selected_count;
-    int path[HACK_MAX_NODES][2]; /* Selected path coordinates */
+    int path[HACK_MAX_NODES][2];
     int difficulty;
     int time_limit;     /* In frames (60fps) */
     int time_left;
@@ -35,21 +35,25 @@ typedef struct {
     bool complete;
     bool success;
     int anim_timer;
+    int target_li;      /* Which LI we're syncing with (for story context) */
 } HackState;
 
-/* Initialize hacking minigame with difficulty (1-5) */
+/* Initialize neural sync minigame with difficulty (1-5) and target LI */
 void hack_init(int difficulty);
 
-/* Update hacking minigame */
+/* Update neural sync minigame */
 void hack_update(void);
 
-/* Render hacking minigame to screen */
+/* Render neural sync minigame to screen */
 void hack_render(void);
 
-/* Check if hacking is complete */
+/* Check if sync is complete */
 bool hack_is_complete(void);
 
 /* Check if player succeeded */
 bool hack_success(void);
+
+/* Set the target LI for flavor text */
+void hack_set_target_li(int li_id);
 
 #endif /* HACKING_MINIGAME_H */

@@ -18,6 +18,9 @@
 #include "faction.h"
 #include "characters_game.h"
 #include "audio.h"
+#include "gift_system.h"
+#include "heart_events.h"
+#include "route_system.h"
 
 static GameState current_state = STATE_TITLE;
 static char chapter_title_text[40];
@@ -36,7 +39,7 @@ void novel_state_init(void) {
 
 void novel_state_set_state(GameState state) {
     current_state = state;
-    
+
     switch (state) {
         case STATE_CHAPTER_INTRO:
             chapter_intro_timer = 0;
@@ -44,6 +47,15 @@ void novel_state_set_state(GameState state) {
         case STATE_DIALOG:
             break;
         case STATE_HACKING:
+            break;
+        case STATE_GIFT_SELECT:
+            gift_ui_init();
+            break;
+        case STATE_HEART_EVENT:
+            heart_events_ui_init();
+            break;
+        case STATE_ROUTE_LOCK:
+            route_lock_ui_init();
             break;
         default:
             break;
@@ -71,13 +83,16 @@ void novel_state_new_game(void) {
     flags_clear();
     faction_reset();
     game_chars_init();
-    
+    gift_init();
+    heart_events_init();
+    route_init();
+
     /* Load Chapter 1 */
     current_script_id = SCRIPT_CH1;
     int count = 0;
     const char **lines = script_get(SCRIPT_CH1, &count);
     script_load(lines, count);
-    
+
     /* Transition to dialog */
     novel_state_set_state(STATE_DIALOG);
 }
@@ -85,13 +100,13 @@ void novel_state_new_game(void) {
 void novel_state_continue_game(int slot) {
     /* Load save data */
     save_read(slot);
-    
+
     /* Reload current script at saved position */
     const ScriptState *ss = script_get_state();
     int count = 0;
     const char **lines = script_get(ss->chapter, &count);
     script_load(lines, count);
-    
+
     novel_state_set_state(STATE_DIALOG);
 }
 
@@ -100,7 +115,7 @@ void novel_state_update(void) {
         case STATE_TITLE:
             title_screen_update();
             break;
-            
+
         case STATE_CHAPTER_INTRO:
             chapter_intro_timer++;
             if (chapter_intro_timer > 180) { /* 3 seconds */
@@ -110,7 +125,7 @@ void novel_state_update(void) {
                 novel_state_set_state(STATE_DIALOG);
             }
             break;
-            
+
         case STATE_DIALOG: {
             /* Handle transitions */
             if (trans_active()) {
@@ -118,10 +133,10 @@ void novel_state_update(void) {
                 script_handle_pending();
                 break;
             }
-            
+
             /* Update dialog box */
             dialog_update();
-            
+
             /* Check if dialog is waiting for input and player pressed A */
             if (dialog_visible() && dialog_choice_made()) {
                 if (dialog_get_choice() >= 0) {
@@ -137,7 +152,7 @@ void novel_state_update(void) {
                 script_run_line();
                 break;
             }
-            
+
             /* If script is waiting, don't advance */
             if (script_is_waiting()) {
                 /* Check if waiting for transition to complete */
@@ -152,20 +167,20 @@ void novel_state_update(void) {
                 }
                 break;
             }
-            
+
             /* Run next script line */
             script_run_line();
-            
+
             /* Check if we transitioned to another state */
             if (current_state != STATE_DIALOG) break;
-            
+
             /* Update transition */
             if (trans_active()) {
                 trans_update();
             }
             break;
         }
-            
+
         case STATE_CHOICE:
             dialog_update();
             if (dialog_choice_made()) {
@@ -177,30 +192,83 @@ void novel_state_update(void) {
                 script_run_line();
             }
             break;
-            
+
         case STATE_HACKING: {
             hack_update();
             if (hack_is_complete()) {
                 if (hack_success()) {
-                    /* Success - continue story */
+                    /* Sync succeeded — romantic/intimate scene continues */
                     sfx_play(SFX_HACK_SUCCESS);
-                    flag_set("hack_success", TRUE);
+                    flag_set("neural_sync_success", TRUE);
                     dialog_open();
-                    dialog_set_text("System breach successful. Data acquired.");
+                    dialog_set_text("Hearts synchronized. A wave of warmth floods through the link.");
                 } else {
-                    /* Failure - consequence */
+                    /* Sync failed — connection lost */
                     sfx_play(SFX_HACK_FAIL);
-                    flag_set("hack_failed", TRUE);
+                    flag_set("neural_sync_failed", TRUE);
                     dialog_open();
-                    dialog_set_text("ALARM TRIGGERED! Security protocols activated.");
-                    faction_modify(FACTION_MEGACORP, -15);
+                    dialog_set_text("Frequency mismatch. The connection fades like a half-remembered dream.");
                 }
                 novel_state_set_state(STATE_DIALOG);
                 script_run_line();
             }
             break;
         }
-            
+
+        case STATE_GIFT_SELECT: {
+            gift_ui_update();
+            if (gift_ui_is_done()) {
+                int result = gift_ui_get_result();
+                if (result >= 0) {
+                    /* Gift was given — apply affinity change */
+                    dialog_open();
+                    dialog_set_text(gift_ui_get_reaction_msg());
+                }
+                novel_state_set_state(STATE_DIALOG);
+                script_run_line();
+            }
+            if (input_pressed(KEY_B)) {
+                /* Cancel gift selection */
+                novel_state_set_state(STATE_DIALOG);
+                script_run_line();
+            }
+            break;
+        }
+
+        case STATE_HEART_EVENT: {
+            heart_events_ui_update();
+            if (heart_events_ui_is_done()) {
+                novel_state_set_state(STATE_DIALOG);
+                script_run_line();
+            }
+            break;
+        }
+
+        case STATE_ROUTE_LOCK: {
+            route_lock_ui_update();
+            if (route_lock_ui_is_done()) {
+                int route = route_lock_ui_get_result();
+                if (route >= ROUTE_NOVA && route <= ROUTE_VEX) {
+                    route_lock_in(route);
+                    /* Load route-specific chapter 4 */
+                    int ch4_scripts[] = {
+                        SCRIPT_CH4_NOVA, SCRIPT_CH4_CHEN,
+                        SCRIPT_CH4_ARIA, SCRIPT_CH4_VEX
+                    };
+                    int count = 0;
+                    const char **lines = script_get(ch4_scripts[route - 1], &count);
+                    script_load(lines, count);
+                }
+                novel_state_set_state(STATE_DIALOG);
+            }
+            if (input_pressed(KEY_B)) {
+                /* Auto-lock to highest affinity */
+                route_auto_lock();
+                novel_state_set_state(STATE_DIALOG);
+            }
+            break;
+        }
+
         case STATE_CG_GALLERY:
             gallery_update();
             if (input_pressed(KEY_B)) {
@@ -208,7 +276,7 @@ void novel_state_update(void) {
                 title_screen_init();
             }
             break;
-            
+
         case STATE_SAVE_LOAD:
             /* Handled by save_load UI */
             if (input_pressed(KEY_B)) {
@@ -216,7 +284,7 @@ void novel_state_update(void) {
                 title_screen_init();
             }
             break;
-            
+
         case STATE_SETTINGS:
             settings_update();
             if (input_pressed(KEY_B)) {
@@ -224,7 +292,7 @@ void novel_state_update(void) {
                 title_screen_init();
             }
             break;
-            
+
         case STATE_ENDING:
             endings_update();
             if (input_pressed(KEY_START)) {
@@ -240,32 +308,44 @@ void novel_state_render(void) {
         case STATE_TITLE:
             title_screen_render();
             break;
-            
+
         case STATE_CHAPTER_INTRO:
             chapter_title_render(chapter_title_text);
             break;
-            
+
         case STATE_DIALOG:
         case STATE_CHOICE:
             dialog_render();
             break;
-            
+
         case STATE_HACKING:
             hack_render();
             break;
-            
+
+        case STATE_GIFT_SELECT:
+            gift_ui_render();
+            break;
+
+        case STATE_HEART_EVENT:
+            heart_events_ui_render();
+            break;
+
+        case STATE_ROUTE_LOCK:
+            route_lock_ui_render();
+            break;
+
         case STATE_CG_GALLERY:
             gallery_render();
             break;
-            
+
         case STATE_SETTINGS:
             settings_render();
             break;
-            
+
         case STATE_ENDING:
             endings_render();
             break;
-            
+
         case STATE_SAVE_LOAD:
             /* Rendered by save_load module */
             break;

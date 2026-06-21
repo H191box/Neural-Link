@@ -13,7 +13,7 @@
  */
 
 static const char* char_names[] = {
-    "Kai", "Nova", "Chen", "ARIA", "Vex"
+    "Kira", "Nova", "Chen", "ARIA", "Vex"
 };
 
 /* Generate a character face as tile data */

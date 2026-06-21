@@ -3,13 +3,16 @@
 
 #include "gba_types.h"
 
-/* Game states */
+/* Game states — extended for otome systems */
 typedef enum {
     STATE_TITLE = 0,
     STATE_CHAPTER_INTRO,
     STATE_DIALOG,
     STATE_CHOICE,
     STATE_HACKING,
+    STATE_GIFT_SELECT,      /* NEW: Gift selection screen */
+    STATE_HEART_EVENT,      /* NEW: Heart event scene */
+    STATE_ROUTE_LOCK,       /* NEW: Route lock choice */
     STATE_CG_GALLERY,
     STATE_SAVE_LOAD,
     STATE_SETTINGS,

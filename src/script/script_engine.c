@@ -142,7 +142,7 @@ ScriptCommand script_parse_line(const char *line) {
         parse_word(p, cmd.str_params[0], 40);
         parse_word(p + my_strlen(cmd.str_params[0]), cmd.str_params[1], 40);
         /* Convert char name to ID */
-        if (my_strcmp(cmd.str_params[0], "Kai") == 0) cmd.int_params[0] = GC_KAI;
+        if (my_strcmp(cmd.str_params[0], "Kira") == 0) cmd.int_params[0] = GC_KIRA;
         else if (my_strcmp(cmd.str_params[0], "Nova") == 0) cmd.int_params[0] = GC_NOVA;
         else if (my_strcmp(cmd.str_params[0], "Chen") == 0) cmd.int_params[0] = GC_CHEN;
         else if (my_strcmp(cmd.str_params[0], "ARIA") == 0) cmd.int_params[0] = GC_ARIA;
@@ -152,7 +152,7 @@ ScriptCommand script_parse_line(const char *line) {
         cmd.cmd = CMD_HIDE;
         p += my_strlen("HIDE");
         parse_word(p, cmd.str_params[0], 40);
-        if (my_strcmp(cmd.str_params[0], "Kai") == 0) cmd.int_params[0] = GC_KAI;
+        if (my_strcmp(cmd.str_params[0], "Kira") == 0) cmd.int_params[0] = GC_KIRA;
         else if (my_strcmp(cmd.str_params[0], "Nova") == 0) cmd.int_params[0] = GC_NOVA;
         else if (my_strcmp(cmd.str_params[0], "Chen") == 0) cmd.int_params[0] = GC_CHEN;
         else if (my_strcmp(cmd.str_params[0], "ARIA") == 0) cmd.int_params[0] = GC_ARIA;
@@ -208,13 +208,15 @@ ScriptCommand script_parse_line(const char *line) {
         if (my_strcmp(cmd.str_params[0], "resistance") == 0) cmd.int_params[0] = FACTION_RESISTANCE;
         else if (my_strcmp(cmd.str_params[0], "megacorp") == 0) cmd.int_params[0] = FACTION_MEGACORP;
         else if (my_strcmp(cmd.str_params[0], "neutrals") == 0) cmd.int_params[0] = FACTION_NEUTRALS;
+        else if (my_strcmp(cmd.str_params[0], "scientists") == 0) cmd.int_params[0] = FACTION_NEUTRAL_SCIENTISTS;
+        else if (my_strcmp(cmd.str_params[0], "ai_collective") == 0) cmd.int_params[0] = FACTION_AI_COLLECTIVE;
     }
     else if (my_strcmp(keyword, "ADD_AFFINITY") == 0) {
         cmd.cmd = CMD_ADD_AFFINITY;
         p += my_strlen("ADD_AFFINITY");
         parse_word(p, cmd.str_params[0], 40);
         cmd.int_params[1] = extract_int(p + my_strlen(cmd.str_params[0]));
-        if (my_strcmp(cmd.str_params[0], "Kai") == 0) cmd.int_params[0] = GC_KAI;
+        if (my_strcmp(cmd.str_params[0], "Kira") == 0) cmd.int_params[0] = GC_KIRA;
         else if (my_strcmp(cmd.str_params[0], "Nova") == 0) cmd.int_params[0] = GC_NOVA;
         else if (my_strcmp(cmd.str_params[0], "Chen") == 0) cmd.int_params[0] = GC_CHEN;
         else if (my_strcmp(cmd.str_params[0], "ARIA") == 0) cmd.int_params[0] = GC_ARIA;

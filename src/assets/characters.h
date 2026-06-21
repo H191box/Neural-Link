@@ -3,8 +3,8 @@
 
 #include "gba_types.h"
 
-/* Character IDs */
-#define CHAR_KAI    0
+/* Character IDs (asset sprite indices, kept for compat) */
+#define CHAR_KAI    0  /* Reused for Kira (female protagonist) */
 #define CHAR_NOVA   1
 #define CHAR_CHEN   2
 #define CHAR_ARIA   3

@@ -4,10 +4,12 @@
 #include "gba_types.h"
 
 /* Faction IDs */
-#define FACTION_RESISTANCE 0
-#define FACTION_MEGACORP   1
-#define FACTION_NEUTRALS   2
-#define FACTION_COUNT      3
+#define FACTION_RESISTANCE        0  /* Nova's faction */
+#define FACTION_MEGACORP          1  /* Chen's faction */
+#define FACTION_NEUTRALS          2  /* Generic neutral */
+#define FACTION_NEUTRAL_SCIENTISTS 3  /* Dr. Vex's faction */
+#define FACTION_AI_COLLECTIVE     4  /* ARIA's faction */
+#define FACTION_COUNT             5
 
 /* Initialize faction system */
 void faction_init(void);

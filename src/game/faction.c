@@ -6,6 +6,8 @@ void faction_init(void) {
     reputations[FACTION_RESISTANCE] = 30;
     reputations[FACTION_MEGACORP] = 50;
     reputations[FACTION_NEUTRALS] = 50;
+    reputations[FACTION_NEUTRAL_SCIENTISTS] = 25;
+    reputations[FACTION_AI_COLLECTIVE] = 40;
 }
 
 void faction_modify(int faction_id, s16 delta) {
